@@ -22,13 +22,12 @@ call plug#begin('~/.config/nvim/plugged')
 
  " Autocomplete
  Plug 'Shougo/deoplete.nvim', { 'do': ':UpdateRemotePlugins' }
- Plug 'autozimu/LanguageClient-neovim' ,  {
-    \ 'branch': 'next',
-    \ 'do': 'bash install.sh',
-    \ }
  Plug 'reasonml-editor/vim-reason-plus'
  Plug 'wokalski/autocomplete-flow'
  Plug 'terryma/vim-multiple-cursors'
+ Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+ 
  "Snippet
  Plug 'Shougo/neosnippet.vim'
  Plug 'Shougo/neosnippet-snippets'
@@ -53,11 +52,13 @@ filetype plugin indent on    " required
  "General settings
  "----------------------------------------------------------
  set termguicolors
+ set encoding=UTF-8
  colorscheme gruvbox
  set background=dark                      " Setting dark mode
-
+ 
+ 
  if has('unnamedplus')
-         set clipboard=unnamed,unnamedplus
+   set clipboard=unnamed,unnamedplus
  endif
  let g:gruvbox_contrast_dark = 'hard'
  let g:gruvbox_hls_cursor = 'yellow'
@@ -79,11 +80,30 @@ filetype plugin indent on    " required
 
  "Vim airline
  let g:airline#extensions#tabline#enabled = 1
- let g:airline#extensions#tabline#left_sep = ' '
+ let g:airline#extensions#tabline#left_sep = ''
  let g:airline#extensions#tabline#left_alt_sep = '|'
  let g:airline#extensions#tabline#formatter = 'unique_tail'
+ "configure whether close button should be shown: >
+ let g:airline#extensions#tabline#show_close_button = 1
+
+ "configure symbol used to represent close button >
+ let g:airline#extensions#tabline#close_symbol = 'X'
  let g:airline#extensions#ale#enabled = 1
 
+
+  if !exists('g:airline_symbols')
+    let g:airline_symbols = {}
+  endif
+" powerline symbols
+  let g:airline_left_sep = ''
+  let g:airline_left_alt_sep = ''
+  let g:airline_right_sep = ''
+  let g:airline_right_alt_sep = ''
+  let g:airline_symbols.branch = ''
+  let g:airline_symbols.readonly = ''
+  let g:airline_symbols.linenr = '☰'
+  let g:airline_symbols.maxlinenr = ''
+  let g:airline_symbols.dirty='⚡'
  if has('unnamedplus')
     set clipboard=unnamed,unnamedplus
  endif
@@ -121,7 +141,7 @@ filetype plugin indent on    " required
  let g:ale_completion_enabled = 1
  let g:ale_completion_maix_suggestions = 50
  let g:ale_fixers = {}
- let g:ale_fixers['javascript'] = ['prettier']
+ let g:ale_fixers['javascript'] = ['eslint']
  let g:ale_fixers['re'] = ['prettier']
  let g:ale_ruby_rubocop_options = ' --only Style/StringLiterals'
  let g:ale_sign_error = '●' " Less aggressive than the default '>>'
@@ -141,7 +161,7 @@ filetype plugin indent on    " required
  set completeopt+=menuone
 
  let g:ale_completion_enabled = 1
- let g:ale_completion_maix_suggestions = 50
+ let g:ale_completion_maix_suggestions = 100
  let g:ale_fixers = {}
  "Switch tabs
  nnoremap H gT
@@ -165,60 +185,18 @@ filetype plugin indent on    " required
  nnoremap L gt
  nnoremap tn :tabnew<CR>
 
- "ale
- let g:ale_linters = {
- \   'javascript': ['eslint'],
- \   'ruby': ['rubocop'],
- \   'go': ['gopls'],
- \}
- set completeopt+=noinsert
- set completeopt+=preview
- set completeopt+=menuone
 
- let g:ale_completion_enabled = 1
- let g:ale_completion_maix_suggestions = 50
- let g:ale_fixers = {}
- let g:ale_fixers['javascript'] = ['prettier']
- let g:ale_fixers['re'] = ['prettier']
- let g:ale_ruby_rubocop_options = ' --only Style/StringLiterals'
- let g:ale_sign_error = '●' " Less aggressive than the default '>>'
- let g:ale_sign_warning = '⚠'
- let g:ale_lint_on_enter = 0 " Less distracting when opening a new file
- let g:ale_lint_on_text_changed = 1
- nmap <leader>d <Plug>(ale_fix)
-
-
- "deoplete
- " Disable deoplete when in multi cursor mode
- function! Multiple_cursors_before()
-    let b:deoplete_disable_auto_complete = 1
-  endfunction
-  function! Multiple_cursors_after()
-    let b:deoplete_disable_auto_complete = 0
-  endfunction
- let g:deoplete#enable_at_startup = 1
  let g:deoplete#enable_smart_case = 1
  let g:deoplete#enable_camel_case = 1
  let g:deoplete#enable_ignore_case = 1
+ let g:deoplete#enable_refresh_always = 1
 
+ let g:LanguageClient_autoStart = 1
  call deoplete#custom#source('LanguageClient',
             \ 'min_pattern_length',
             \ 2)
 
- let g:LanguageClient_serverCommands = {
-     \ 'reason': ['ocaml-language-server', '--stdio'],
-     \ 'ocaml': ['ocaml-language-server', '--stdio'],
-     \ 'javascript': ['typescript-language-server', '--stdio'],
-     \ 'go': ['gopls'],
-     \}
-" \ 'javascript.jsx': ['/usr/lib/node_modules/javascript-typescript-langserver/lib/language-server-stdio.js'],
-
- nnoremap <silent> gd :call LanguageClient_textDocument_definition()<cr>
- nnoremap <silent> gf :call LanguageClient_textDocument_formatting()<cr>
- nnoremap <silent> <cr> :call LanguageClient_textDocument_hover()<cr>
-
  "autocmd BufEnter  *  call ncm2#enable_for_buffer()
- let g:LanguageClient_autoStart = 1
  autocmd FileType javascript setlocal omnifunc=LanguageClient#complete
  " Run gofmt on save
  autocmd BufWritePre *.go :call LanguageClient#textDocument_formatting_sync()
@@ -323,3 +301,10 @@ au FileType json set tabstop=2
  " Plugin: 'terryma/vim-multiple-cursors'
  "----------------------------------------------
  let g:multi_cursor_next_key='<C-n>'
+
+ " Plugin devicons
+ let g:webdevicons_enable = 1
+ let g:webdevicons_enable_airline_tabline = 1
+
+ "coc.nvim
+ let g:coc_global_extensions = [ 'coc-tsserver' ]
